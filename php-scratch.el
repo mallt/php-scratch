@@ -112,6 +112,13 @@ The repl process will be restarted in the background."
     (process-put proc 'input-command command)
     (process-send-string proc command)))
 
+(define-derived-mode php-scratch-mode
+  php-mode "php-scratch"
+  "Major mode for the php scratch buffer.")
+
+(define-key php-scratch-mode-map (kbd "C-c C-e") 'php-scratch-eval)
+(define-key php-scratch-mode-map (kbd "C-c C-c") 'php-scratch-clear-state)
+
 ;;;###autoload
 (defun php-scratch ()
   "Open the php scratch buffer and start the php scratch repl process."
@@ -122,10 +129,8 @@ The repl process will be restarted in the background."
                        "$this->setInspector(new \\Boris\\ExportInspector());\n")
   (get-buffer-create "*php-scratch*")
   (switch-to-buffer "*php-scratch*")
-  (php-mode)
+  (php-scratch-mode)
   (insert "/* php scratch buffer */\n")
-  (local-set-key (kbd "C-c C-e") 'php-scratch-eval)
-  (local-set-key (kbd "C-c C-c") 'php-scratch-clear-state)
   (let ((proc (get-process "php-scratch-repl")))
     (set-process-filter proc 'php-scratch--startup-process-filter)
     (set-process-query-on-exit-flag proc nil)))
