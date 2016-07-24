@@ -55,7 +55,9 @@
   "The filter for the startup of the php scratch repl PROC.
 STR is the output string of the startup PROC."
   (set-process-filter proc 'php-scratch--process-filter)
-  (message "%s" "C-c C-e: eval region or current line; C-c C-c: clear state"))
+  (message "%s" (concat "C-c C-e: eval region or current line; "
+                        "C-c C-c: clear state; "
+                        "C-c M-:: evaluate from minibuffer")))
 
 (defun php-scratch--process-filter (proc str)
   "The filter for the php scratch repl PROC.
@@ -112,12 +114,24 @@ The repl process will be restarted in the background."
     (process-put proc 'input-command command)
     (process-send-string proc command)))
 
+(defun php-scratch-minibuffer-eval ()
+  "Read the php code in the minibuffer and evaluate it."
+  (interactive)
+  (let ((code (read-from-minibuffer "PHP eval: ")))
+    (with-temp-buffer
+      (insert code)
+      (set-mark (point-min))
+      (goto-char (point-max))
+      (exchange-point-and-mark)
+      (php-scratch-eval))))
+
 (define-derived-mode php-scratch-mode
   php-mode "php-scratch"
   "Major mode for the php scratch buffer.")
 
 (define-key php-scratch-mode-map (kbd "C-c C-e") 'php-scratch-eval)
 (define-key php-scratch-mode-map (kbd "C-c C-c") 'php-scratch-clear-state)
+(define-key php-scratch-mode-map (kbd "C-c M-:") 'php-scratch-minibuffer-eval)
 
 ;;;###autoload
 (defun php-scratch ()
