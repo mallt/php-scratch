@@ -37,7 +37,7 @@
   "Php scratch buffer customizations."
   :group 'processes)
 
-(defcustom php-scratch-boris-command nil
+(defcustom php-scratch-boris-command "boris"
   "Path to the boris repl command."
   :type 'string
   :group 'php-scratch)

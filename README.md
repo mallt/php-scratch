@@ -12,7 +12,7 @@ php-scratch is available as a MELPA package: <kbd>M-x</kbd> `package-install` <k
 
 php-scratch depends on the [Boris PHP REPL](https://github.com/borisrepl/boris).
 
-The `php-scratch-boris-command` variable has to be set to the path of the boris command.
+The `php-scratch-boris-command` variable has to be set to the path of the boris command. The default value is `"boris"`.
 
 ## Usage
 - Open the php scratch buffer with the following command: <kbd>M-x</kbd> `php-scratch`
