@@ -59,10 +59,7 @@
 (defun php-scratch--startup-process-filter (proc str)
   "The filter for the startup of the php scratch repl PROC.
 STR is the output string of the startup PROC."
-  (set-process-filter proc 'php-scratch--process-filter)
-  (message "%s" (concat "C-c C-e: eval region or current line; "
-                        "C-c C-c: clear state; "
-                        "C-c M-:: evaluate from minibuffer")))
+  (set-process-filter proc 'php-scratch--process-filter))
 
 (defun php-scratch--show-result (str)
   "Show the result STR."
@@ -100,11 +97,17 @@ value of E is killed, the php scratch buffer will be killed and
 the php scratch repl process will be restarted."
   (when (string= "killed\n" e)
     (kill-buffer "*php-scratch-repl*")
-    (process-send-string (make-comint "php-scratch-repl" php-scratch-boris-command)
-                         "$this->setInspector(new \\Boris\\ExportInspector());\n")
+    (php-scratch--start-repl-process)))
+
+(defun php-scratch--start-repl-process ()
+  "Start the php repl process."
+  (when (not (get-process "php-scratch-repl"))
+    (make-comint "php-scratch-repl" php-scratch-boris-command)
     (let ((proc (get-process "php-scratch-repl")))
-      (set-process-filter proc 'php-scratch--process-filter)
-      (set-process-query-on-exit-flag proc nil))))
+      (set-process-query-on-exit-flag proc nil)
+      (set-process-filter proc 'php-scratch--startup-process-filter)
+      (process-send-string proc
+                           "$this->setInspector(new \\Boris\\ExportInspector());\n"))))
 
 (defun php-scratch-clear-state ()
   "Clear the state of the php scratch repl process.
@@ -152,17 +155,15 @@ The repl process will be restarted in the background."
 (defun php-scratch ()
   "Open the php scratch buffer and start the php scratch repl process."
   (interactive)
-  (when (not php-scratch-boris-command)
-    (user-error "%s" "Error: the variable php-scratch-boris-command is not set."))
-  (process-send-string (make-comint "php-scratch-repl" php-scratch-boris-command)
-                       "$this->setInspector(new \\Boris\\ExportInspector());\n")
-  (get-buffer-create "*php-scratch*")
-  (switch-to-buffer "*php-scratch*")
-  (php-scratch-mode)
-  (insert "/* php scratch buffer */\n")
-  (let ((proc (get-process "php-scratch-repl")))
-    (set-process-filter proc 'php-scratch--startup-process-filter)
-    (set-process-query-on-exit-flag proc nil)))
+  (if (get-buffer "*php-scratch*")
+      (switch-to-buffer "*php-scratch*")
+    (when (not php-scratch-boris-command)
+      (user-error "%s" "Error: the variable php-scratch-boris-command is not set."))
+    (php-scratch--start-repl-process)
+    (get-buffer-create "*php-scratch*")
+    (switch-to-buffer "*php-scratch*")
+    (php-scratch-mode)
+    (insert "/* php scratch buffer */\n")))
 
 (provide 'php-scratch)
 
