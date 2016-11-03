@@ -42,6 +42,11 @@
   :type 'string
   :group 'php-scratch)
 
+(defcustom php-scratch-use-overlays nil
+  "Controls whether overlays should be used to show results."
+  :type 'boolean
+  :group 'php-scratch)
+
 (defun php-scratch--font-lock-string (string)
   "Apply php font lock to STRING."
   (with-temp-buffer
@@ -58,6 +63,16 @@ STR is the output string of the startup PROC."
   (message "%s" (concat "C-c C-e: eval region or current line; "
                         "C-c C-c: clear state; "
                         "C-c M-:: evaluate from minibuffer")))
+
+(defun php-scratch--show-result (str)
+  "Show the result STR."
+  (if php-scratch-use-overlays
+      (momentary-string-display (concat " => " str)
+                                (if (region-active-p)
+                                    (region-end)
+                                  (line-end-position))
+                                nil "")
+    (message "%s" str)))
 
 (defun php-scratch--process-filter (proc str)
   "The filter for the php scratch repl PROC.
@@ -76,7 +91,7 @@ STR is the output string of the PROC."
            (replace-arrow (replace-regexp-in-string "→" "" res))
            (trim (s-trim replace-arrow))
            (font-lock (php-scratch--font-lock-string trim)))
-      (message "%s" font-lock))))
+      (php-scratch--show-result font-lock))))
 
 (defun php-scratch--process-sentinel (proc e)
   "The sentinel of the php scratch repl PROC.
