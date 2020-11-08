@@ -85,7 +85,12 @@ STR is the output string of the PROC."
            (res (mapconcat 'identity
                            (butlast (split-string output-str "\r"))
                            ""))
-           (replace-arrow (replace-regexp-in-string "→" "" res))
+           (res2 (if (string= "" res)
+                     (mapconcat 'identity
+                                (butlast (split-string output-str "\n"))
+                                "")
+                   res))
+           (replace-arrow (replace-regexp-in-string "→" "" res2))
            (trim (s-trim replace-arrow))
            (font-lock (php-scratch--font-lock-string trim)))
       (php-scratch--show-result font-lock))))
